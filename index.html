@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Frontend Inventory Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>Inventory Manager 📦</h1>
+        <nav>
+            <button data-page="dashboard" class="nav-btn active">Dashboard</button>
+            <button data-page="add-item" class="nav-btn">Add Inventory</button>
+            <button data-page="stats" class="nav-btn">Stats & Analytics</button>
+        </nav>
+    </header>
+
+    <main>
+        <section id="dashboard" class="page active">
+            <h2>Inventory Overview</h2>
+            <div id="summary-cards">
+                <div class="card total">Total Items: <span id="total-items">0</span></div>
+                <div class="card unique">Unique Products: <span id="unique-products">0</span></div>
+                <div class="card value">Total Value (Est.): <span id="total-value">$0.00</span></div>
+            </div>
+            <h3>Current Stock List</h3>
+            <table id="inventory-table">
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Quantity</th>
+                        <th>Price/Unit</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </section>
+
+        <section id="add-item" class="page hidden">
+            <h2>Add New Inventory Item</h2>
+            <form id="add-item-form">
+                <label for="product-name">Product Name</label>
+                <input type="text" id="product-name" required placeholder="e.g., T-Shirt - Blue">
+
+                <label for="quantity">Quantity</label>
+                <input type="number" id="quantity" required min="1" value="1">
+
+                <label for="price">Price Per Unit ($)</label>
+                <input type="number" id="price" required min="0.01" step="0.01" value="10.00">
+
+                <button type="submit" class="primary-btn">Add Item to Stock</button>
+                <p id="add-status" class="status"></p>
+            </form>
+        </section>
+
+        <section id="stats" class="page hidden">
+            <h2>Inventory Health Check 📊</h2>
+            <div id="stats-content">
+                <p><strong>Top Stocked Item:</strong> <span id="top-item-name">N/A</span> (<span id="top-item-qty">0</span> units)</p>
+                <p><strong>Lowest Stocked Item (Below 5):</strong> <span id="low-item-name">N/A</span></p>
+                <p><strong>Average Unit Price:</strong> <span id="avg-price">$0.00</span></p>
+                <p class="low-stock-warning hidden">⚠️ **Alert:** Some items are running low! Reorder soon.</p>
+            </div>
+            <h3>Inventory Distribution Graph (Text-Based)</h3>
+            <pre id="distribution-chart">
+                </pre>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+    <script src="styles.css"></script>
+</body>
+</html>
