@@ -8,12 +8,6 @@ const navButtons = document.querySelectorAll('.nav-btn');
 const inventoryTableBody = document.querySelector('#inventory-table tbody');
 const addItemForm = document.getElementById('add-item-form');
 
-// NEW: Edit Modal Elements
-const editModal = document.getElementById('edit-modal');
-const editItemForm = document.getElementById('edit-item-form');
-const cancelEditBtn = document.getElementById('cancel-edit');
-
-
 // --- Data Management Functions ---
 
 /** Loads inventory from localStorage or initializes with sample data. */
@@ -56,16 +50,6 @@ function removeItem(id) {
     renderDashboard(); // Re-render the dashboard immediately
 }
 
-/** Updates an item's quantity and price by its ID. */
-function editItem(id, newQuantity, newPrice) {
-    const itemIndex = inventory.findIndex(item => item.id === id);
-    if (itemIndex !== -1) {
-        inventory[itemIndex].quantity = parseInt(newQuantity);
-        inventory[itemIndex].price = parseFloat(newPrice).toFixed(2);
-        saveInventory();
-    }
-}
-
 
 // --- Rendering Functions ---
 
@@ -83,28 +67,11 @@ function renderDashboard() {
         // Create Table Row
         const row = inventoryTableBody.insertRow();
         row.insertCell().textContent = item.name;
-        
-        // Quantity Cell (with low stock highlight)
-        const qtyCell = row.insertCell();
-        qtyCell.textContent = item.quantity;
-        if (item.quantity < 5) {
-            qtyCell.style.fontWeight = 'bold';
-            qtyCell.style.color = 'var(--danger-color)'; // Apply CSS variable for color
-        }
-
+        row.insertCell().textContent = item.quantity;
         row.insertCell().textContent = `$${parseFloat(item.price).toFixed(2)}`;
         
-        // Action Cell
+        // Action Button
         const actionCell = row.insertCell();
-        
-        // 1. Edit Button
-        const editButton = document.createElement('button');
-        editButton.className = 'primary-btn';
-        editButton.textContent = 'Edit';
-        editButton.onclick = () => showEditModal(item.id); 
-        actionCell.appendChild(editButton);
-
-        // 2. Remove Button
         const removeButton = document.createElement('button');
         removeButton.className = 'remove-btn';
         removeButton.textContent = 'Remove';
@@ -163,11 +130,10 @@ function generateDistributionChart() {
     
     // Sort by quantity for better visualization
     const sortedInventory = [...inventory].sort((a, b) => b.quantity - a.quantity);
-    const maxQty = sortedInventory.length > 0 ? sortedInventory[0].quantity : 0;
+    const maxQty = sortedInventory[0].quantity;
     const chartWidth = 30; // Max characters for the bar
     
     sortedInventory.slice(0, 10).forEach(item => { // Show top 10 items
-        if (maxQty === 0) return;
         const barLength = Math.round((item.quantity / maxQty) * chartWidth);
         const bar = '█'.repeat(barLength); // Use a block character for the bar
         const paddedName = item.name.padEnd(20, ' ');
@@ -175,28 +141,6 @@ function generateDistributionChart() {
     });
     
     document.getElementById('distribution-chart').textContent = chartOutput;
-}
-
-
-// --- Modal Control Functions ---
-
-/** Opens the edit modal and populates it with the item's current data. */
-function showEditModal(id) {
-    const itemToEdit = inventory.find(item => item.id === id);
-    if (!itemToEdit) return;
-
-    // Populate the modal fields
-    document.getElementById('edit-product-name-title').textContent = itemToEdit.name;
-    document.getElementById('edit-item-id').value = itemToEdit.id;
-    document.getElementById('edit-quantity').value = itemToEdit.quantity;
-    document.getElementById('edit-price').value = parseFloat(itemToEdit.price).toFixed(2);
-
-    editModal.classList.remove('hidden');
-}
-
-/** Closes the edit modal. */
-function hideEditModal() {
-    editModal.classList.add('hidden');
 }
 
 
@@ -213,24 +157,22 @@ function navigateTo(targetPageId) {
         targetPage.classList.remove('hidden');
     }
     
-    // Update active button state (now using <a> tags, but the class logic is the same)
+    // Update active button state
     navButtons.forEach(btn => btn.classList.remove('active'));
     document.querySelector(`[data-page="${targetPageId}"]`).classList.add('active');
 
     // Run specific rendering logic for the page being shown
-    if (targetPageId === 'dashboard' || targetPageId === 'stats') {
-        renderDashboard(); 
-        if (targetPageId === 'stats') {
-            updateStats();
-        }
+    if (targetPageId === 'dashboard') {
+        renderDashboard();
+    } else if (targetPageId === 'stats') {
+        renderDashboard(); // Re-render dashboard first to ensure data is updated
+        updateStats();
     }
 }
 
-// Attach navigation listeners to buttons (now <a> tags)
+// Attach navigation listeners to buttons
 navButtons.forEach(button => {
     button.addEventListener('click', (e) => {
-        // Prevent default link jump behavior, allowing JS to handle navigation
-        e.preventDefault(); 
         navigateTo(e.target.dataset.page);
     });
 });
@@ -255,27 +197,10 @@ addItemForm.addEventListener('submit', (e) => {
         
         addItemForm.reset();
         
-        // Navigate back to the dashboard after adding
+        // Optional: Navigate back to the dashboard after adding
         navigateTo('dashboard');
     }
 });
-
-// Handle the Edit Modal form submission
-editItemForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    const id = parseInt(document.getElementById('edit-item-id').value);
-    const newQuantity = document.getElementById('edit-quantity').value;
-    const newPrice = document.getElementById('edit-price').value;
-
-    editItem(id, newQuantity, newPrice);
-    
-    hideEditModal();
-    renderDashboard(); // Re-render the table with the new data
-});
-
-// Handle the Cancel button click
-cancelEditBtn.addEventListener('click', hideEditModal);
 
 
 // --- Initial Load ---
